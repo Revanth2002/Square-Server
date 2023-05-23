@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,10 +37,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'myapp'
+    'myapp',
+    #Rest Framework
+    'rest_framework',
+    'rest_framework.authtoken',
+    #corsheaders
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -118,7 +124,25 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
+
+# Static files (CSS, JavaScript, Images)
+if DEBUG==True :
+    STATIC_URL = '/static/'
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+else:
+    #AzureMediaStorage in Production mode
+    DEFAULT_FILE_STORAGE = 'project.custom_azure.AzureMediaStorage'
+    STATICFILES_STORAGE = 'project.custom_azure.AzureStaticStorage'
+    STATIC_LOCATION = "static"
+    MEDIA_LOCATION = "media"
+    AZURE_ACCOUNT_NAME = "garudatest"
+    # AZURE_CUSTOM_DOMAIN = f'{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
+    # AZURE_ACCOUNT_KEY = 'Vgbnjt6LBP9U/o/nHvYp+AaDJV53QXoUOr124UDVrzBTkj7BheB27xxfosH+GTTeL27VBUBmt8rQpkPOHUmxiA=='
+        
+    # STATIC_URL = f'https://{AZURE_CUSTOM_DOMAIN}/{STATIC_LOCATION}/'
+    # MEDIA_URL = f'https://{AZURE_CUSTOM_DOMAIN}/{MEDIA_LOCATION}/'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
