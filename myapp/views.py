@@ -1364,7 +1364,16 @@ class OpenGroupShareUrl(APIView):
                     "plans": result.body['objects'],
                 }
 
-                response = TemplateResponse(request, 'template_1.html', data)
+                #TODO : add templates part
+                template_name = 'template_1.html'
+                if get_group.template_type == "1":
+                    template_name = 'template_1.html'
+                elif get_group.template_type == "2":
+                    template_name = 'template_2.html'
+                else:
+                    template_name = 'template_3.html'
+
+                response = TemplateResponse(request, template_name, data)
 
         return response
 
