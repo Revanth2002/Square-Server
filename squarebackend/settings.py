@@ -27,9 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*','localhost']
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -61,7 +59,7 @@ ROOT_URLCONF = 'squarebackend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join('','templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -111,21 +109,19 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
+BASE_URL = "http://localhost:8000"
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
+SQUARE_APP_ID= "sandbox-sq0idb-SRWkAMesYP5gSBlpAii1Kw" #"sq0idp-hGDpf0a5Lo1bQF9J6b6Y8Q"
+SQUARE_APP_SECRET = "sandbox-sq0csb-G-sWvaZce8bFSDtWG-7_QwB2ui0O4HN5TV9Zt09A6XI"  #"sq0csp-nWT6LVycldPVJCwTFDiCM_4YM_64WevhIjxSeCYAISE"
+SQUARE_API_URL = "https://connect.squareupsandbox.com"
+SQUARE_SANDBOX_TOKEN = "EAAAEA0tYbJTJzDRPAxWp8VQK2eVbNSh1Rhw_gb5Ff0um4naj1IfFATkN0-e8NMQ"
+SQUARE_ENVIRONMENT = "sandbox"
 
-
-# Static files (CSS, JavaScript, Images)
 if DEBUG==True :
     STATIC_URL = '/static/'
     MEDIA_URL = '/media/'

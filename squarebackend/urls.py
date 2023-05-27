@@ -6,6 +6,7 @@ from django.urls import include, path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/',include('myapp.urls')),
+    path('source/',include('myapp.share_urls')),
 ]
 if settings.DEBUG == True:
     urlpatterns+=static(settings.STATIC_URL,document_root=settings.STATIC_ROOT)
