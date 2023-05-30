@@ -15,6 +15,7 @@ urlpatterns=[
     path('update-group/',UpdateGroup.as_view(),name="update-group"), #update the group name
     path('status-plan/',EnableDisablePlan.as_view(),name="update-plan"), #update the plan status
     path('edit-plan/',EditPlan.as_view(),name="edit-plan"), #update the plan details
+    path('profile/',ProfileSettings.as_view(),name="profile"), #update the profile details
 
     #----Not used----
     # path('login/',LoginUser.as_view(),name="login-user"),

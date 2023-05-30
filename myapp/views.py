@@ -1378,6 +1378,87 @@ class OpenGroupShareUrl(APIView):
         return response
 
 
+#-------Profile Settings-------
+class ProfileSettings(APIView):
+    authentication_classes = [UserAuthentication]
+    permission_classes = []
+
+    def get(self, request, *args, **kwargs):
+        """
+        Output Data:
+        {
+            "id": "LJ34D6M6CP0W8",
+            "name": "GarudaTech",
+            "address": {
+                "address_line_1": "1600 Pennsylvania Ave NW",
+                "locality": "Washington",
+                "administrative_district_level_1": "DC",
+                "postal_code": "20500",
+                "country": "US"
+            },
+            "timezone": "UTC",
+            "capabilities": [
+                "CREDIT_CARD_PROCESSING",
+                "AUTOMATIC_TRANSFERS"
+            ],
+            "status": "ACTIVE",
+            "created_at": "2023-05-24T09:23:47.805Z",
+            "merchant_id": "ML9YYPK2J5Y1R",
+            "country": "US",
+            "language_code": "en-US",
+            "currency": "USD",
+            "business_name": "Garuda World",
+            "type": "PHYSICAL",
+            "business_hours": {},
+            "description": "Garuda bio",
+            "logo_url": "https://square-web-sandbox-f.squarecdn.com/files/64d17602a9adf90e73784b3094aeef9f7de2e3aa/original.jpeg",
+            "mcc": "7299"
+        }
+        """
+        user = request.user
+        data = request.data
+
+        current_merchant_id = user.merchant_id
+
+        """Square Client Connection"""
+        square_client_conn = Client(
+            access_token=user.access_token,  # settings.SQUARE_SANDBOX_TOKEN,
+            environment=settings.SQUARE_ENVIRONMENT
+        )
+        
+        result = square_client_conn.locations.list_locations()
+
+        if result.is_success():
+            print(result.body)
+            """Get the particular object from the list which has the same merchant_id"""
+            profile_data  = {}
+            for location in result.body['locations']:
+                if current_merchant_id == location['merchant_id']:
+                    profile_data = location
+                    break
+            
+            return display_response(
+                msg="SUCCESS",
+                err=None,
+                body={
+                    "log": "Successfully fetched profile data",
+                    "profile_data": profile_data
+                },
+                statuscode=status.HTTP_200_OK
+            )
+
+        elif result.is_error():
+            print(result.errors)
+            return display_response(
+                msg="FAIL",
+                err=str(result.errors),
+                body={
+                    "log": "Failed at SQUARE api location list"
+                },
+                statuscode=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+
 class TestResponse(APIView):
     authentication_classes = []
     permission_classes = []
