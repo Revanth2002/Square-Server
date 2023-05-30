@@ -1458,6 +1458,66 @@ class ProfileSettings(APIView):
                 statuscode=status.HTTP_406_NOT_ACCEPTABLE
             )
 
+#----Dashboard analytics----
+class DashboardAnalytics(APIView):
+    authentication_classes = [UserAuthentication]
+    permission_classes = []
+
+    def get(self, request, *args):
+        """
+            json_data = {
+                "industries" : 3, #defined manually
+                "total_created_groups" : 5, #query total SubscriptionModel objects count,
+                "groups" : [
+                {
+                    "name" : "",
+                    "total_plans" : 0, #count
+                    "disabled_plans" : 0, #count
+                    "template_type" : 1/2/3,
+                    "total_subscriptions" : 0, #count
+                }
+                ]
+            }
+        """
+        user = request.user
+        data = request.data
+        json_data = {}
+
+        """Get the total industries"""
+        json_data['industries'] = 3 #defined manually
+
+        """Get the total created groups"""
+        get_groups = SubscriptionModel.objects.filter(
+            Q(merchant_id=user.merchant_id))
+        json_data['total_created_groups'] = len(get_groups)
+
+        serializer = SubsciptionSerializer(get_groups, many=True, context={"request":request})
+        for i in serializer.data:
+            """Get the total plans,disabled plans,template_type,total_subscriptions"""
+            data = {
+                "name" : i['group'],
+                "total_plans" : len(i['plan']),
+                "disabled_plans" : len(i['disabled_plans']),
+                "template_type" : i['template_type'],
+                "total_subscriptions" : len(i['subscribed_people']),
+                "plan_list" : i['plan'],
+                "disabled_plans_list" : i['disabled_plans'],
+                "subscribed_people_list" : i['subscribed_people'],
+                "group_enabled" : i['group_enabled'],
+                "url" : i['api_endpoints']
+            }
+            json_data['groups'].append(data)
+        
+        return display_response(
+            msg="SUCCESS",
+            err=None,
+            body={
+                "log": "Successfully fetched dashboard analytics data",
+                "data": json_data
+            },
+            statuscode=status.HTTP_200_OK
+        )
+
 
 class TestResponse(APIView):
     authentication_classes = []
