@@ -225,6 +225,7 @@ class OAuthRedirect(APIView):
         code = data.get('code', None)
         response_type = data.get('response_type', None)
         state = data.get('state', None)
+        print("=================228=-============")
         print(data)
 
         if response_type in [None, ""] or state in [None, ""] or code in [None, ""]:
@@ -346,11 +347,13 @@ class NewGroupIndustry(APIView):
     def post(self, request):
         user = request.user
         data = request.data
-
+        print("user", user)
         industry = data.get('industry', None)
         industry_id = data.get('industry_id', None)
         group_name = data.get('group_name', None)
         template_type = data.get('template_type', None)
+
+        print("data",data)
 
         if industry in [None, ""] or group_name in [None, ""] or template_type in [None, ""] or industry_id in [None, ""]:
             return display_response(
@@ -373,7 +376,7 @@ class NewGroupIndustry(APIView):
                 group=group_name,
                 template_type=template_type,
                 endpoint_path=final_endpoint_path,
-                api_endpoint=full_url
+                api_endpoints=full_url
             )
             return display_response(
                 msg="SUCCESS",
@@ -975,12 +978,13 @@ class GetAllGroups(APIView):
                 - group_id : the id of the group (second preference)
                     returns all the plan of a group using square api
         """
-        user = request.user
-        data = request.data
+        user = request.user 
 
-        home_groups = data.get("home_groups", True)
-        industry_id = data.get("industry_id", None)
-        group_id = data.get("group_id", None)
+        home_groups = request.query_params.get("home_groups", False)
+        industry_id = request.query_params.get("industry_id", None)
+        group_id = request.query_params.get("group_id", None)
+
+        print("43534",home_groups, industry_id, group_id)
 
         if home_groups:
             """Get the created groups of the user from the SubscriptionModel"""
@@ -1041,7 +1045,7 @@ class GetAllGroups(APIView):
         elif group_id not in [None, ""]:
             """Sort by the merchant_id and the group_id"""
             get_groups = SubscriptionModel.objects.filter(
-                Q(merchant_id=user.merchant_id) & Q(group_id=group_id)).first()
+                Q(merchant_id=user.merchant_id) & Q(id=group_id)).first()
             if get_groups is None:
                 return display_response(
                     msg="SUCCESS",
@@ -1053,7 +1057,7 @@ class GetAllGroups(APIView):
                     statuscode=status.HTTP_200_OK
                 )
             subscriptions_serializer = SubsciptionSerializer(
-                get_groups, many=True, context={"request": request})
+                get_groups, context={"request": request})
 
             """Square Client Connection"""
             square_client_conn = Client(
@@ -1064,6 +1068,18 @@ class GetAllGroups(APIView):
             plan_ids = get_groups.plan
             plan_ids = list(plan_ids)
 
+            if len(plan_ids) == 0:
+                return display_response(
+                    msg="SUCCESS",
+                    err=None,
+                    body={
+                        "log": "Successfully fetched subscription models",
+                        "group_data": subscriptions_serializer.data,
+                        "plans": []
+                    },
+                    statuscode=status.HTTP_200_OK
+                )
+
             result = square_client_conn.catalog.batch_retrieve_catalog_objects(
                 body={
                     "object_ids": plan_ids
@@ -1071,14 +1087,23 @@ class GetAllGroups(APIView):
             )
 
             if result.is_success():
-                print(result.body)
+                plan_models = PlanModel.objects.filter(Q(plan_id__in=plan_ids))
+                plan_serializer = PlanSerializer(plan_models, many=True,context={"request":request})
+
+                for plan in result.body['objects']:
+                    for plan_serializer_data in plan_serializer.data:
+                        if plan['id'] == plan_serializer_data['plan_id']:
+                            plan['plan_notes'] = plan_serializer_data['notes']
+                            plan['plan_points'] = plan_serializer_data['points']
+                 
+                print("result.body------------------",result.body['objects'])
                 return display_response(
                     msg="SUCCESS",
                     err=None,
                     body={
                         "log": "Successfully fetched subscription models",
                         "group_data": subscriptions_serializer.data,
-                        "plans": result.body['subscriptions']
+                        "plans": result.body['objects']
                     },
                     statuscode=status.HTTP_200_OK
                 )

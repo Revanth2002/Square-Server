@@ -38,6 +38,7 @@ class UserAuthentication(BaseAuthentication):
             raise exceptions.AuthenticationFailed(_('Not authorised! Token is not provided'))
 
         print("1")
+        print(auth)
         if(len(auth)==1):
             msg = _('Invalid token header. No credentials provided.')
             raise exceptions.AuthenticationFailed(msg)
@@ -55,6 +56,7 @@ class UserAuthentication(BaseAuthentication):
             # id=decode_token["id"]
 
             user=User.objects.filter(access_token=token_)
+            print(user)
             if user.exists():
                 return (user[0],None)
             else:
