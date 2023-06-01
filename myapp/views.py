@@ -426,7 +426,8 @@ class NewSubscriptionPlan(APIView):
         subscription_group_id = data.get('subscription_group_id', None)
         plan_name = data.get('plan_name', None)
         cadence = data.get('cadence', None)
-        price = int(data.get('price', None))
+        price = int(data.get('price', None)) 
+        print("price", price)
         notes = data.get('notes', None)
         points = data.get('points', None)
 
@@ -471,7 +472,7 @@ class NewSubscriptionPlan(APIView):
                                                 "cadence": cadence,
                                                 "periods": 1,
                                                 "recurring_price_money": {
-                                                    "amount": price,
+                                                    "amount": price*100,
                                                     "currency": "USD"
                                                 }
                                             }
@@ -484,7 +485,7 @@ class NewSubscriptionPlan(APIView):
                 }
             )
             if result.is_success():
-                print(result.body)
+                print(result.body)  
 
                 """Create PlanModel object"""
                 create_plan = PlanModel.objects.create(
@@ -556,8 +557,11 @@ class MakePayment(APIView):
         name = data.get('name', None)
         phone_number = data.get('phone_number', None)
         plan_id = data.get('plan_id', None)
+        card = data.get('card', None)
         plan_amt = int(data.get('plan_amt', None))
         subscription_model_id = data.get('subscription_model_id', None)
+
+        print("------------data-------------------",data)
 
         if email in [None, ""] or name in [None, ""] or phone_number in [None, ""] or plan_id in [None, ""] or plan_amt in [None, ""] or subscription_model_id in [None, ""]:
             return display_response(
@@ -723,8 +727,7 @@ class MakePayment(APIView):
                         print(result.body)
                         """Add the subscription id in the model"""
                         subscription_id = result.body['subscription']['id']
-                        subscription_model.subscribed_people.add(
-                            subscription_id)
+                        subscription_model.subscribed_people.append(subscription_id)
                         subscription_model.save()
 
                         # TODO : Check for subscription status and generate invoice
@@ -996,7 +999,8 @@ class GetAllGroups(APIView):
                     err=None,
                     body={
                         "log": "No subscription models or groups found",
-                        "items": []
+                        "items": [],
+                        "total plans" : ''
                     },
                     statuscode=status.HTTP_200_OK
                 )
@@ -1004,12 +1008,27 @@ class GetAllGroups(APIView):
             """Get the group ids of the user"""
             subscriptions_serializer = SubsciptionSerializer(
                 get_subscription_model, many=True, context={"request": request})
+            
+            live_plans = []
+            disabled_plans = []
+            subscribed_people = []
+            for subscription in subscriptions_serializer.data:
+                for i in subscription['plan']:
+                    live_plans.append(i)
+                for j in subscription['disabled_plans']:
+                    disabled_plans.append(j)
+                for k in subscription['subscribed_people']:
+                    subscribed_people.append(k)
+
             return display_response(
                 msg="SUCCESS",
                 err=None,
                 body={
                     "log": "Successfully fetched subscription models",
-                    "items": subscriptions_serializer.data
+                    "items": subscriptions_serializer.data,
+                    "live_plans" : live_plans,
+                    "disabled_plans" : disabled_plans,
+                    "subscribed_people" :subscribed_people
                 },
                 statuscode=status.HTTP_200_OK
             )
@@ -1090,11 +1109,19 @@ class GetAllGroups(APIView):
                 plan_models = PlanModel.objects.filter(Q(plan_id__in=plan_ids))
                 plan_serializer = PlanSerializer(plan_models, many=True,context={"request":request})
 
+                # get_groups ; get disabled plans from the group
+                disabled_plans = get_groups.disabled_plans
+                disabled_plans = list(disabled_plans)
+                print("disabled_plans",disabled_plans)
                 for plan in result.body['objects']:
                     for plan_serializer_data in plan_serializer.data:
                         if plan['id'] == plan_serializer_data['plan_id']:
                             plan['plan_notes'] = plan_serializer_data['notes']
                             plan['plan_points'] = plan_serializer_data['points']
+                            if plan['id'] in disabled_plans:
+                                plan['disabled'] = True
+                            else:
+                                plan['disabled'] = False
                  
                 print("result.body------------------",result.body['objects'])
                 return display_response(
@@ -1379,15 +1406,19 @@ class OpenGroupShareUrl(APIView):
                 for plan in result.body['objects']:
                     for plan_serializer_data in plan_serializer.data:
                         if plan['id'] == plan_serializer_data['plan_id']:
-                            plan['plan_data'] = plan_serializer_data
+                            plan['plan_notes'] = plan_serializer_data['notes']
+                            plan['plan_points'] = plan_serializer_data['points']
 
                 """Must return the following data to the template"""
                 data = {
                     "subscription_model_id": get_group.id,
                     "group_name": get_group.group,
                     "industry_name": get_group.industry,
-                    "plans": result.body['objects'],
+                    "endpoint_path": get_group.endpoint_path,
+                    "plans": result.body['objects'], 
                 }
+                
+                print(data['plans'][0])
 
                 #TODO : add templates part
                 template_name = 'template_1.html'
@@ -1402,6 +1433,44 @@ class OpenGroupShareUrl(APIView):
 
         return response
 
+class OpenGroupSharePaymentUrl(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request, url):
+        data = request.query_params 
+        plan_amt = data.get('plan_amt', None)
+        plan_id = data.get('plan_id', None)
+        subscription_model_id = data.get('subscription_model_id', None)
+        plan_name = data.get('plan_name', None)
+
+        print("------GET------" ,data) 
+        print("------plan------" ,plan_amt , subscription_model_id , plan_id)
+      
+        get_group = SubscriptionModel.objects.filter(
+            Q(endpoint_path=url)).first()
+        if get_group is None:
+            response = TemplateResponse(request, 'error.html', data)
+        else:
+            data = {
+                "subscription_model_id": subscription_model_id,
+                "group_name": get_group.group,
+                "industry_name": get_group.industry,
+                "plan_amt" : plan_amt,
+                "plan_name" : plan_name,
+                "plan_id" : plan_id,          
+                "endpoint_path": get_group.endpoint_path,      
+            }
+
+            template_name = 'payment_1.html'
+            if get_group.template_type == "1":
+                    template_name = 'payment_1.html'
+            elif get_group.template_type == "2":
+                template_name = 'payment_2.html'
+            else:
+                template_name = 'payment_3.html'
+            response = TemplateResponse(request, template_name, data)
+        return response
 
 #-------Profile Settings-------
 class ProfileSettings(APIView):

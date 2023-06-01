@@ -16,13 +16,15 @@
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-    /> 
+    />
+    <link rel="stylesheet" href="assets/css/pricing-plan.css" />
+
     <style>
       body {
   font-family: 'Karla', sans-serif; }
 
   a:hover{
-    color: #4f46e5; 
+    color: #e83e8c; 
   }
 .navbar-brand {
   margin:0 7%;
@@ -33,81 +35,94 @@
 
 .pricing-table-subtitle {
   margin-top: 68px;
-  color: #4f46e5;
-  font-weight: bolder; 
-}
-
-.pricing-plan-note{
-  font-size: 16px;
-  color: #303132ed;
-  font-weight: 600;
-}
+  color: #e83e8c;
+  font-weight: bolder; }
 
 .pricing-table-title {
   font-weight: bold;
-  margin-bottom: 68px; }
+  margin-bottom: 68px; 
+}
 
 .pricing-card {
   border: none;
-  border-radius: 10px;
+  border-radius: 20px;
   margin-bottom: 40px;
-  text-align: center;
+  text-align: center; 
   -webkit-transition: all 0.6s;
   transition: all 0.6s; }
+
   .pricing-card:hover {
     box-shadow: 0 2px 40px 0 rgba(205, 205, 205, 0.55); }
+
   .pricing-card.pricing-card-highlighted {
-    box-shadow: 0 2px 40px 0 rgba(205, 205, 205, 0.55); }
+    border: 1px solid rgba(205, 205, 205, 0.55);
+    /* box-shadow: 0 2px 40px 0 rgba(205, 205, 205, 0.55);  */
+  }
+
   .pricing-card:hover {
     box-shadow: 0 2px 40px 0 rgba(205, 205, 205, 0.55);
     -webkit-transform: translateY(-10px);
             transform: translateY(-10px); 
-    }
+    } 
     .pricing-card-no:hover {
       box-shadow: 0 2px 40px 0 rgba(205, 205, 205, 0.55);
       transform: none !important; 
+      
       }
   .pricing-card .card-body {
     padding-top: 55px;
-    padding-bottom: 62px; }
+    /* padding-bottom: 62px;  */
+  }
 
 .pricing-plan-title {
   font-size: 20px;
   color: #111827;
   margin-bottom: 11px;
+  text-align: start;
+  padding-left: 8px;
   font-weight: normal; }
 
+.pricing-plan-subtitle{
+  font-size: 16px;
+  color: #303132ed;
+  margin-bottom: 11px;
+  text-align: start;
+  padding-left: 8px;
+  font-weight: normal;
+}
 .pricing-plan-cost {
   font-size: 50px;
   color: #111827;
   font-weight: bold;
+  text-align: start;
+  padding-left: 8px;
   margin-bottom: 29px; }
 
 .pricing-plan-cost-cadence{
   font-size: 16px;
   color: #303132ed;
-  text-transform: capitalize;
   }
 
 .pricing-plan-icon {
   display: inline-block;
   width: 40px;
   height: 40px;
-  font-size: 40px;
-  line-height: 1;
-  margin-bottom: 24px; }
+  font-size: 20px;
+  line-height: 1; 
+}
   .pricing-plan-basic .pricing-plan-icon {
-    color: #4f46e5; }   
+    color: #e83e8c; }   
   .pricing-plan-pro .pricing-plan-icon {
-    color: #4f46e5; }
+    color: #e83e8c; }
   .pricing-plan-enterprise .pricing-plan-icon {
     color: #5d78ff; }
 
 .pricing-plan-features {
   list-style: none;
-  padding-left: 0;
+  padding-left: 8px;
   font-size: 14px;
   line-height: 2.14;
+  text-align: start;
   margin-bottom: 35px;
   color: #303132; }
 
@@ -117,7 +132,7 @@
   font-weight: bold;
   width: 145px;
   height: 45px;
-  border-radius: 22.5px;
+  border-radius: 10px;
   -webkit-transition: all 0.4s;
   transition: all 0.4s;
   position: relative;
@@ -130,20 +145,20 @@
   -webkit-box-pack: center;
           justify-content: center; }
   .pricing-plan-basic .pricing-plan-purchase-btn {
-    background-color: #4f46e5;
+    background-color: #e83e8c;
     color: #fff; }
     .pricing-plan-basic .pricing-plan-purchase-btn:hover {
-      box-shadow: 0 3px 0 0 #2b22da; 
+      box-shadow: 0 3px 0 0 #c50c62; 
     }
     .pricing-plan-basic .pricing-plan-purchase-btn:active {
       -webkit-transform: translateY(3px);
               transform: translateY(3px);
       box-shadow: none; }
   .pricing-plan-pro .pricing-plan-purchase-btn {
-    background-color: #4f46e5;
+    background-color: #e83e8c;
     color: #fff; }
     .pricing-plan-pro .pricing-plan-purchase-btn:hover {
-      box-shadow: 0 3px 0 0 #2b22da; }
+      box-shadow: 0 3px 0 0 #c50c62; }
     .pricing-plan-pro .pricing-plan-purchase-btn:active {
       -webkit-transform: translateY(3px);
               transform: translateY(3px);
@@ -158,9 +173,8 @@
               transform: translateY(3px);
       box-shadow: none; }
 
-/*# sourceMappingURL=pricing-plan.css.map */
-
     </style>
+
   </head>
   <body>
     <main>
@@ -169,8 +183,8 @@
         <div class="container-fluid">
           <a class="navbar-brand" href="#">
             <img 
-           src="https://firebasestorage.googleapis.com/v0/b/react-firechat-ae4bf.appspot.com/o/square.svg?alt=media&token=8629d4be-6a66-4db8-9eea-0ecf22cd4dea"
-            alt="Logo" width="30" height="30" class="d-inline-block align-text-top">
+           src="https://firebasestorage.googleapis.com/v0/b/react-firechat-ae4bf.appspot.com/o/square.svg?alt=media&token=8629d4be-6a66-4db8-9eea-0ecf22cd4dea" 
+           alt="Logo" width="30" height="30" class="d-inline-block align-text-top">
             {{ industry_name }}
           </a>
         </div>
@@ -189,31 +203,27 @@
               class="card pricing-card pricing-card-highlighted pricing-plan-pro"
             >
               <div class="card-body">
-                <i class="mdi mdi-wallet-giftcard pricing-plan-icon"></i> 
-                <p class="pricing-plan-title">{{ plan.subscription_plan_data.name }}</p>
+                 <p class="pricing-plan-title">{{ plan.subscription_plan_data.name }}</p>
                 {% load custom_filters %}
-                 {% for phase in plan.subscription_plan_data.phases %} 
+                {% for phase in plan.subscription_plan_data.phases %} 
                  <h3 class="pricing-plan-cost ml-auto">${{ phase.recurring_price_money.amount|divide_string_by_100 }}<span class="pricing-plan-cost-cadence">/{{ phase.cadence }}</span></h3>
-                 <p class="pricing-plan-note">{{plan.plan_notes }}</p>                  
-                  {% endfor %}
-             <ul class="pricing-plan-features">
-              {% for point in plan.plan_points %}
-              {% if point != "" %} 
-                <li>{{ point }}</li>
-              {% endif %}
-          {% endfor %}   
-            </ul> 
-            {% for phase in plan.subscription_plan_data.phases %} 
-            <a class="btn pricing-plan-purchase-btn"
-          onclick="passDataToBackend('{{ phase.recurring_price_money.amount }}','{{ plan.id }}', '{{ plan.subscription_plan_data.name }}')"
-        >Purchase</a>                  
-             {% endfor %}
-                
+                 <a 
+                 onclick="passDataToBackend('{{ phase.recurring_price_money.amount }}','{{ plan.id }}', '{{ plan.subscription_plan_data.name }}')"
+                 class="btn pricing-plan-purchase-btn w-100">Purchase</a>
+                 {% endfor %}
+                 <br />
+                 <p class="pricing-plan-subtitle">{{plan.plan_notes }}</p>                  
+                 <ul class="pricing-plan-features">
+                  {% for point in plan.plan_points %}
+                  {% if point != "" %} 
+                    <li><i class="mdi mdi-check pricing-plan-icon"></i>{{ point }}</li>
+                  {% endif %}
+              {% endfor %}   
+                </ul>
               </div>
             </div>
           </div>
-
-          {% endfor %}   
+          {% endfor %}  
         </div>
       </div>
     </main>
@@ -222,17 +232,13 @@
       var group_name = "{{ group_name }}";  
       var endpoint_path = "{{ endpoint_path }}";
       var subscription_model_id = "{{ subscription_model_id }}";
-
-      console.log(industry_name , group_name , subscription_model_id , endpoint_path);
-      
+    
       // function to pass data to the backend endpoint
-      function passDataToBackend(plan_amt , plan_id, plan_name){
-        console.log("plan_amt",plan_amt, plan_id, plan_name); 
+      function passDataToBackend(plan_amt , plan_id, plan_name){  
         $.ajax({
           type: "GET",
           url: `${endpoint_path}/payment?subscription_model_id=${subscription_model_id}&plan_amt=${plan_amt}&plan_id=${plan_id}&plan_name=${plan_name}`,
-          success: function(data){
-            console.log(data);
+          success: function(data){ 
             window.location.href = `/source/public-share/${endpoint_path}/payment?subscription_model_id=${subscription_model_id}&plan_amt=${plan_amt}&plan_id=${plan_id}&plan_name=${plan_name}`;
           },
           error: function(error){
@@ -242,7 +248,6 @@
       }
 
     </script>
-
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
