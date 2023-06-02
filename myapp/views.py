@@ -555,14 +555,24 @@ class MakePayment(APIView):
         plan_id = data.get('plan_id', None)
         plan_amt = int(data.get('plan_amt', None))
         subscription_model_id = data.get('subscription_model_id', None)
+        source_id = data.get('source_id', None) #Token 
+        card_number = data.get('card_number', None) #Token
+        expiry_date = data.get('expiry_date', None) #Token
 
-        if email in [None, ""] or name in [None, ""] or phone_number in [None, ""] or plan_id in [None, ""] or plan_amt in [None, ""] or subscription_model_id in [None, ""]:
+        if email in [None, ""] or card_number in [None, ""] or name in [None, ""] or phone_number in [None, ""] or plan_id in [None, ""] or plan_amt in [None, ""] or subscription_model_id in [None, ""] or source_id in [None, ""]:
             return display_response(
                 msg="FAIL",
-                err="email, name, phone_number, plan_id, plan_amt are required",
+                err="email, name, phone_number, plan_id, plan_amt, source_id are required",
                 body=None,
                 statuscode=status.HTTP_406_NOT_ACCEPTABLE
             )
+
+        """strip the card_number for last 4 digits"""
+        stripped_card_number = card_number[13:17]
+
+        """strip the MM/YY to MM and YY"""
+        expiry_date = expiry_date.split('/')
+
 
         """Check if subscription model exists"""
         subscription_model = SubscriptionModel.objects.filter(
@@ -642,6 +652,63 @@ class MakePayment(APIView):
                             },
                             statuscode=status.HTTP_406_NOT_ACCEPTABLE
                         )
+                
+                """Check if the card already exists or else add the card"""   
+                card_result = square_client_conn.cards.list_cards(
+                    customer_id = customer_id
+                )
+                customer_card_id = None
+                if card_result.is_success():
+                    print(card_result.body)
+                    """If card_result is not null and matches with exact """
+                    
+                    for i in card_result['cards'] :
+                        if stripped_card_number == i['last_4']:
+                            customer_card_id = i['id']
+                            break 
+                    
+                    if customer_card_id is None:
+                        """Create the card and return that id"""
+                        idem_key_card = generate_idempotency_key()
+                        create_card_result = square_client_conn.cards.create_card(
+                            body = {
+                                "idempotency_key": idem_key_card,
+                                "source_id": "cnon:card-nonce-ok",
+                                "card": {
+                                    "exp_month": expiry_date[0],
+                                    "exp_year": expiry_date[1],
+                                    "cardholder_name": name,
+                                    "customer_id": customer_id
+                                }
+                            }
+                        )
+
+                        if create_card_result.is_success():
+                            print(create_card_result.body)
+                            customer_card_id = create_card_result.body['card']['id']
+                        elif create_card_result.is_error():
+                            print(create_card_result.errors)
+                            return display_response(
+                                msg="FAIL",
+                                err=str(create_card_result.errors),
+                                body={
+                                    "log" : "Failed at Card results id creation"
+                                },
+                                statuscode=status.HTTP_406_NOT_ACCEPTABLE
+                            )
+
+
+                elif card_result.is_error():
+                    print(card_result.errors)
+                    return display_response(
+                        msg="FAIL",
+                        err=str(card_result.errors),
+                        body={
+                            "log": "Failed at SQUARE api card retrieval"
+                        },
+                        statuscode=status.HTTP_406_NOT_ACCEPTABLE
+                    )
+
         except Exception as e:
             print(e)
             return display_response(
@@ -685,7 +752,7 @@ class MakePayment(APIView):
             idem_key = generate_idempotency_key()
             payment_result = square_client_conn.payments.create_payment(
                 body={
-                    "source_id": "cnon:card-nonce-ok",
+                    "source_id": source_id, #TODO : change with token method
                     "idempotency_key": idem_key,
                     "amount_money": {
                         "amount": plan_amt,
@@ -712,7 +779,8 @@ class MakePayment(APIView):
                             "plan_id": plan_id,
                             "customer_id": customer_id,
                             "start_date": formatted_date,
-                            "timezone": "Asia/Kolkata"
+                            "timezone": "Asia/Kolkata",
+                            "card_id" : customer_card_id
                         }
                     )
 
