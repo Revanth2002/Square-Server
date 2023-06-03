@@ -19,6 +19,13 @@
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     />
+    <link rel="stylesheet" href="style.css" preload>
+
+    <script
+      type="text/javascript"
+      src="https://sandbox.web.squarecdn.com/v1/square.js"
+    ></script>
+
     <style>
       body {
   font-family: 'Karla', sans-serif; }
@@ -198,6 +205,13 @@
                             <input id="mobileInput" type="number" class="form-control mb-3" placeholder="1234567890" required>                    
                         </div>     
                     </div>
+
+                    <form id="payment-form">
+                      <div id="card-container"></div>
+                      <button id="card-button" type="button">Pay $1.00</button>
+                    </form>
+                    <div id="payment-status-container"></div>
+                    
                     <p class="pricing-plan-cost-cadence" style="font-weight: 800;">Card Number</p>
                     <input type="text" id="cardInput" class="form-control mb-3" placeholder="1001 1001 1001 1001" required>
                     <div class="row">
@@ -222,7 +236,158 @@
           </div> 
         </div>
       </div>
+
+      
+
     </main>
+
+    <script>
+      const appId = 'sandbox-sq0idb-RT3u-HhCpNdbMiGg5aXuVg';
+      const locationId = 'TC4Z3ZEBKRXRH';
+
+      async function initializeCard(payments) {
+        const card = await payments.card();
+        await card.attach('#card-container');
+
+        return card;
+      }
+
+      async function createPayment(token, verificationToken) {
+        const body = JSON.stringify({
+          locationId,
+          sourceId: token,
+          verificationToken,
+          idempotencyKey: window.crypto.randomUUID(),
+        });
+
+        const paymentResponse = await fetch('/payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body,
+        });
+
+        if (paymentResponse.ok) {
+          return paymentResponse.json();
+        }
+
+        const errorBody = await paymentResponse.text();
+        throw new Error(errorBody);
+      }
+
+      async function tokenize(paymentMethod) {
+        const tokenResult = await paymentMethod.tokenize();
+        if (tokenResult.status === 'OK') {
+          console.log('Tokenization successful' , tokenResult.token);
+          return tokenResult.token;
+        } else {
+          let errorMessage = `Tokenization failed with status: ${tokenResult.status}`;
+          if (tokenResult.errors) {
+            errorMessage += ` and errors: ${JSON.stringify(
+              tokenResult.errors
+            )}`;
+          }
+
+          throw new Error(errorMessage);
+        }
+      }
+
+      // Required in SCA Mandated Regions: Learn more at https://developer.squareup.com/docs/sca-overview
+      async function verifyBuyer(payments, token) {
+        const verificationDetails = {
+          amount: '1.00',
+          billingContact: {
+            addressLines: ['123 Main Street', 'Apartment 1'],
+            familyName: 'Doe',
+            givenName: 'John',
+            email: 'jondoe@gmail.com',
+            country: 'GB',
+            phone: '3214563987',
+            region: 'LND',
+            city: 'London',
+          },
+          currencyCode: 'GBP',
+          intent: 'CHARGE',
+        };
+
+        const verificationResults = await payments.verifyBuyer(
+          token,
+          verificationDetails
+        );
+        return verificationResults.token;
+      }
+
+      // status is either SUCCESS or FAILURE;
+      function displayPaymentResults(status) {
+        const statusContainer = document.getElementById(
+          'payment-status-container'
+        );
+        if (status === 'SUCCESS') {
+          statusContainer.classList.remove('is-failure');
+          statusContainer.classList.add('is-success');
+        } else {
+          statusContainer.classList.remove('is-success');
+          statusContainer.classList.add('is-failure');
+        }
+
+        statusContainer.style.visibility = 'visible';
+      }
+
+      document.addEventListener('DOMContentLoaded', async function () {
+        if (!window.Square) {
+          throw new Error('Square.js failed to load properly');
+        }
+
+        let payments;
+        try {
+          payments = window.Square.payments(appId, locationId);
+        } catch {
+          const statusContainer = document.getElementById(
+            'payment-status-container'
+          );
+          statusContainer.className = 'missing-credentials';
+          statusContainer.style.visibility = 'visible';
+          return;
+        }
+
+        let card;
+        try {
+          card = await initializeCard(payments);
+        } catch (e) {
+          console.error('Initializing Card failed', e);
+          return;
+        }
+
+        async function handlePaymentMethodSubmission(event, card) {
+          event.preventDefault();
+
+          try {
+            // disable the submit button as we await tokenization and make a payment request.
+            cardButton.disabled = true;
+            const token = await tokenize(card);
+            const verificationToken = await verifyBuyer(payments, token);
+            const paymentResults = await createPayment(
+              token,
+              verificationToken
+            );
+            displayPaymentResults('SUCCESS');
+
+            console.debug('Payment Success', paymentResults);
+          } catch (e) {
+            cardButton.disabled = false;
+            displayPaymentResults('FAILURE');
+            console.error(e.message);
+          }
+        }
+
+        const cardButton = document.getElementById('card-button');
+        cardButton.addEventListener('click', async function (event) {
+          await handlePaymentMethodSubmission(event, card);
+        });
+      });
+    </script>
+
     <script>  
      var subscription_model_id = "{{ subscription_model_id }}";
      var group_name = "{{ group_name }}";
@@ -231,6 +396,7 @@
      var plan_id = "{{ plan_id }}"  
      var endpoint_path = "{{ endpoint_path }}" 
     
+
     function openLink() { 
       const linkElement = document.getElementById("dynamic-link");
       linkElement.href = `/source/public-share/${endpoint_path}`; 
@@ -278,7 +444,7 @@
         });
       } 
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>    
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>    
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
