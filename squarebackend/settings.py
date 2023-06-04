@@ -115,7 +115,8 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-BASE_URL = "http://localhost:8000"
+# BASE_URL = "http://localhost:8000"
+BASE_URL = "https://web-magicsubscribe.bunnyenv.com/"
 
 SQUARE_APP_ID= "sandbox-sq0idb-SRWkAMesYP5gSBlpAii1Kw" #"sq0idp-hGDpf0a5Lo1bQF9J6b6Y8Q"
 SQUARE_APP_SECRET = "sandbox-sq0csb-G-sWvaZce8bFSDtWG-7_QwB2ui0O4HN5TV9Zt09A6XI"  #"sq0csp-nWT6LVycldPVJCwTFDiCM_4YM_64WevhIjxSeCYAISE"
