@@ -27,6 +27,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*','localhost' , 'localhost:5173' , 'web-magicsubscribe.bunnyenv.com' , 'https://web-magicsubscribe.bunnyenv.com']
 CORS_ORIGIN_ALLOW_ALL = True 
+CORS_ORGIN_WHITELIST = [
+    "https://web-magicsubscribe.bunnyenv.com",
+    "web-magicsubscribe.bunnyenv.com"
+]
 
 # Application definition
 INSTALLED_APPS = [
