@@ -179,7 +179,7 @@ class RegisterAPI(APIView):
                 statuscode=status.HTTP_200_OK
             )
         except Exception as e:
-            print(e)
+            #print(e)
             return display_response(
                 msg="FAIL",
                 err=str(e),
@@ -197,7 +197,7 @@ class OAuthAuthorize(APIView):
         try:
             SCOPES_LIST = "CUSTOMERS_WRITE CUSTOMERS_READ MERCHANT_PROFILE_READ SUBSCRIPTIONS_WRITE SUBSCRIPTIONS_READ ORDERS_WRITE ITEMS_WRITE INVOICES_WRITE INVOICES_READ ITEMS_READ BANK_ACCOUNTS_READ CASH_DRAWER_READ PAYMENTS_READ PAYMENTS_WRITE SETTLEMENTS_READ"
             req_url = f"{settings.SQUARE_API_URL}/oauth2/authorize?client_id={settings.SQUARE_APP_ID}&scope={SCOPES_LIST}&session=False&state=82201dd8d83d23cc8a48caf52b"
-            print(req_url)
+            #print(req_url)
             return display_response(
                 msg="SUCCESS",
                 err=None,
@@ -225,8 +225,8 @@ class OAuthRedirect(APIView):
         code = data.get('code', None)
         response_type = data.get('response_type', None)
         state = data.get('state', None)
-        print("=================228=-============")
-        print(data)
+        #print("=================228=-============")
+        #print(data)
 
         if response_type in [None, ""] or state in [None, ""] or code in [None, ""]:
             return display_response(
@@ -250,8 +250,8 @@ class OAuthRedirect(APIView):
             response = requests.post(
                 f'{settings.SQUARE_API_URL}/oauth2/token', json=payload, headers=headers)
             res_data = response.json()
-            print("------res data------")
-            print(res_data)
+            #print("------res data------")
+            #print(res_data)
 
             try:
                 merchant_id = res_data['merchant_id']
@@ -265,8 +265,8 @@ class OAuthRedirect(APIView):
                 profile_req = requests.get(
                     profile_url, headers=profile_headers)
                 profile_res_data = profile_req.json()
-                print(f"{settings.SQUARE_API_URL}/v2/merchants/{merchant_id}")
-                print(profile_req.json())
+                #print(f"{settings.SQUARE_API_URL}/v2/merchants/{merchant_id}")
+                #print(profile_req.json())
 
                 merchant_id = res_data['merchant_id']
                 current_user = User.objects.filter(
@@ -309,8 +309,8 @@ class OAuthRedirect(APIView):
                     statuscode=status.HTTP_200_OK
                 )
             except Exception as e:
-                print("--------------------")
-                print(e)
+                #print("--------------------")
+                #print(e)
                 return display_response(
                     msg="FAIL",
                     err="Exchange token for profile merchant failed",
@@ -327,7 +327,7 @@ class OAuthRedirect(APIView):
 
     def post(sef, request):
         data = request.query_params
-        print(data)
+        #print(data)
 
         return display_response(
             msg="SUCCESS",
@@ -347,13 +347,13 @@ class NewGroupIndustry(APIView):
     def post(self, request):
         user = request.user
         data = request.data
-        print("user", user)
+        #print("user", user)
         industry = data.get('industry', None)
         industry_id = data.get('industry_id', None)
         group_name = data.get('group_name', None)
         template_type = data.get('template_type', None)
 
-        print("data",data)
+        #print("data",data)
 
         if industry in [None, ""] or group_name in [None, ""] or template_type in [None, ""] or industry_id in [None, ""]:
             return display_response(
@@ -427,7 +427,7 @@ class NewSubscriptionPlan(APIView):
         plan_name = data.get('plan_name', None)
         cadence = data.get('cadence', None)
         price = int(data.get('price', None)) 
-        print("price", price)
+        #print("price", price)
         notes = data.get('notes', None)
         points = data.get('points', None)
 
@@ -485,7 +485,7 @@ class NewSubscriptionPlan(APIView):
                 }
             )
             if result.is_success():
-                print(result.body)  
+                #print(result.body)  
 
                 """Create PlanModel object"""
                 create_plan = PlanModel.objects.create(
@@ -517,7 +517,7 @@ class NewSubscriptionPlan(APIView):
                     statuscode=status.HTTP_200_OK
                 )
             elif result.is_error():
-                print(result.errors)
+                #print(result.errors)
                 return display_response(
                     msg="FAIL",
                     err=str(result.errors),
@@ -553,7 +553,7 @@ class MakePayment(APIView):
                 -phone number(US number optional,ISD not supported)
         """
         data = request.data
-        print("data", data)
+        #print("data", data)
 
         name = data.get('name', None)
         email = data.get('email', None)
@@ -576,7 +576,7 @@ class MakePayment(APIView):
                 statuscode=status.HTTP_406_NOT_ACCEPTABLE
             )
 
-        print("----------passed first check------------------")
+        #print("----------passed first check------------------")
 
         """strip the card_number for last 4 digits"""
         stripped_card_number = card_number
@@ -604,14 +604,14 @@ class MakePayment(APIView):
             )
 
         """Square Client Connection"""
-        print("-----square client connection-----")
-        print(db_access_token)
+        #print("-----square client connection-----")
+        #print(db_access_token)
 
         square_client_conn = Client(
             access_token=db_access_token,  # user.access_token, #settings.SQUARE_SANDBOX_TOKEN,
             environment=settings.SQUARE_ENVIRONMENT
         )
-        print("605")
+        #print("605")
 
         """Step-1 : Create or getcustomer client first"""
         try:
@@ -626,10 +626,10 @@ class MakePayment(APIView):
                     }
                 }
             )
-            print("------get customers-------")
-            print(get_customer)
+            #print("------get customers-------")
+            #print(get_customer)
             if get_customer.is_error():
-                print(get_customer.errors)
+                #print(get_customer.errors)
                 return display_response(
                     msg="FAIL",
                     err=str(get_customer.errors),
@@ -639,15 +639,15 @@ class MakePayment(APIView):
                     statuscode=status.HTTP_406_NOT_ACCEPTABLE
                 )
             elif get_customer.is_success():
-                print("------inside get_customers.is_success()-------")
-                print(get_customer.body)
-                print(len(get_customer.body))
+                #print("------inside get_customers.is_success()-------")
+                #print(get_customer.body)
+                #print(len(get_customer.body))
                 """if customer length greater than 0 then customer exists"""
                 if len(get_customer.body) != 0:
-                    print("---------if create customer--------")
+                    #print("---------if create customer--------")
                     customer_id = get_customer.body['customers'][0]['id']
                 else:
-                    print("---------else create customer--------")
+                    #print("---------else create customer--------")
                     create_customer = square_client_conn.customers.create_customer(
                         body={
                             "given_name": name,
@@ -655,12 +655,12 @@ class MakePayment(APIView):
                             "phone_number": phone_number  # "212-456-7890"
                         }
                     )
-                    print(create_customer)
+                    #print(create_customer)
                     if create_customer.is_success():
-                        print(create_customer.body)
+                        #print(create_customer.body)
                         customer_id = create_customer.body['customer']['id']
                     elif create_customer.is_error():
-                        print(create_customer.errors)
+                        #print(create_customer.errors)
                         return display_response(
                             msg="FAIL",
                             err=str(create_customer.errors),
@@ -670,7 +670,7 @@ class MakePayment(APIView):
                             statuscode=status.HTTP_406_NOT_ACCEPTABLE
                         )
                 
-                print(f"customer_id : {customer_id}")
+                #print(f"customer_id : {customer_id}")
 
                 """Check if the card already exists or else add the card"""   
                 card_result = square_client_conn.cards.list_cards(
@@ -678,14 +678,14 @@ class MakePayment(APIView):
                 )
                 customer_card_id = None
                 if card_result.is_success():
-                    print(card_result.body)
+                    #print(card_result.body)
                     """If card_result is not null and matches with exact """
                     
                     if len(card_result.body) == 0:
                         customer_card_id = None
                     else:
                         for i in card_result.body['cards'] :
-                            print("670" , i)
+                            #print("670" , i)
                             if stripped_card_number == i['last_4']:
                                 customer_card_id = i['id']
                                 break
@@ -705,14 +705,14 @@ class MakePayment(APIView):
                                 }
                             }
                         )
-                        print("690")
+                        #print("690")
 
                         if create_card_result.is_success():
-                            print(create_card_result.body)
+                            #print(create_card_result.body)
                             customer_card_id = create_card_result.body['card']['id']
                         elif create_card_result.is_error():
-                            print(create_card_result.errors)
-                            print("697")
+                            #print(create_card_result.errors)
+                            #print("697")
                             return display_response(
                                 msg="FAIL",
                                 err=str(create_card_result.errors),
@@ -724,7 +724,7 @@ class MakePayment(APIView):
 
 
                 elif card_result.is_error():
-                    print(card_result.errors)
+                    #print(card_result.errors)
                     return display_response(
                         msg="FAIL",
                         err=str(card_result.errors),
@@ -735,8 +735,8 @@ class MakePayment(APIView):
                     )
 
         except Exception as e:
-            print("----failed at customer customers search_customers----")
-            print(e)
+            #print("----failed at customer customers search_customers----")
+            #print(e)
             return display_response(
                 msg="FAIL",
                 err=str(e),
@@ -746,16 +746,16 @@ class MakePayment(APIView):
                 statuscode=status.HTTP_406_NOT_ACCEPTABLE
             )
 
-        print("726")
+        #print("726")
         """Step-2 : Get location id"""
         try:
             location_res = square_client_conn.locations.list_locations()
 
             if location_res.is_success():
-                print(location_res.body)
+                #print(location_res.body)
                 location_id = location_res.body['locations'][0]['id']
             elif location_res.is_error():
-                print(location_res.errors)
+                #print(location_res.errors)
                 return display_response(
                     msg="FAIL",
                     err=str(location_res.errors),
@@ -773,7 +773,7 @@ class MakePayment(APIView):
                 },
                 statuscode=status.HTTP_406_NOT_ACCEPTABLE
             )
-        print("759")
+        #print("759")
 
         """Step-3 : Create a payment"""
         try:
@@ -792,7 +792,7 @@ class MakePayment(APIView):
             )
 
             if payment_result.is_success():
-                print("778",payment_result.body)
+                #print("778",payment_result.body)
                 """Make subscription now"""
                 current_date = date.today()
                 formatted_date = current_date.strftime(Ymd)
@@ -800,7 +800,7 @@ class MakePayment(APIView):
                 """Step-4 : Create subscription"""
                 try:
                     idem_key1 = generate_idempotency_key()
-                    print("786" , customer_card_id)
+                    #print("786" , customer_card_id)
                     result = square_client_conn.subscriptions.create_subscription(
                         body={
                             "idempotency_key": idem_key1,
@@ -815,7 +815,7 @@ class MakePayment(APIView):
 
 
                     if result.is_success():
-                        print("799",result.body)
+                        #print("799",result.body)
                         """Add the subscription id in the model"""
                         subscription_id = result.body['subscription']['id']
                         subscription_model.subscribed_people.append(subscription_id)
@@ -833,7 +833,7 @@ class MakePayment(APIView):
                             statuscode=status.HTTP_200_OK
                         )
                     elif result.is_error():
-                        print(result.errors)
+                        #print(result.errors)
                         return display_response(
                             msg="FAIL",
                             err=str(result.errors),
@@ -853,7 +853,7 @@ class MakePayment(APIView):
                     )
 
             elif payment_result.is_error():
-                print(payment_result.errors)
+                #print(payment_result.errors)
                 return display_response(
                     msg="FAIL",
                     err=str(payment_result.errors),
@@ -905,7 +905,7 @@ class GetSubscriptions(APIView):
             )
 
             if result.is_success():
-                print(result.body)
+                #print(result.body)
                 return display_response(
                     msg="SUCCESS",
                     err=None,
@@ -916,7 +916,7 @@ class GetSubscriptions(APIView):
                     statuscode=status.HTTP_200_OK
                 )
             elif result.is_error():
-                print(result.errors)
+                #print(result.errors)
                 return display_response(
                     msg="FAIL",
                     err=str(result.errors),
@@ -941,8 +941,8 @@ class GetSubscriptions(APIView):
 
             subscription_ids = get_subscription_model.subscribed_people
             subscription_ids = list(subscription_ids)
-            print("-------------------")
-            print(subscription_ids)
+            #print("-------------------")
+            #print(subscription_ids)
 
             result = square_client_conn.subscriptions.search_subscriptions(
                 body={
@@ -955,7 +955,7 @@ class GetSubscriptions(APIView):
             )
 
             if result.is_success():
-                print(result.body)
+                #print(result.body)
                 return display_response(
                     msg="SUCCESS",
                     err=None,
@@ -966,7 +966,7 @@ class GetSubscriptions(APIView):
                     statuscode=status.HTTP_200_OK
                 )
             elif result.is_error():
-                print(result.errors)
+                #print(result.errors)
                 return display_response(
                     msg="FAIL",
                     err=str(result.errors),
@@ -994,8 +994,8 @@ class GetSubscriptions(APIView):
             subscription_ids = []
             for group_model in get_group_models:
                 subscription_ids.extend(list(group_model.subscribed_people))
-            print("-------------------")
-            print(subscription_ids)
+            #print("-------------------")
+            #print(subscription_ids)
 
             result = square_client_conn.subscriptions.search_subscriptions(
                 body={
@@ -1008,7 +1008,7 @@ class GetSubscriptions(APIView):
             )
 
             if result.is_success():
-                print(result.body)
+                #print(result.body)
                 return display_response(
                     msg="SUCCESS",
                     err=None,
@@ -1019,7 +1019,7 @@ class GetSubscriptions(APIView):
                     statuscode=status.HTTP_200_OK
                 )
             elif result.is_error():
-                print(result.errors)
+                #print(result.errors)
                 return display_response(
                     msg="FAIL",
                     err=str(result.errors),
@@ -1035,7 +1035,7 @@ class GetSubscriptions(APIView):
             )
 
             if result.is_success():
-                print(result.body)
+                #print(result.body)
                 return display_response(
                     msg="SUCCESS",
                     err=None,
@@ -1046,7 +1046,7 @@ class GetSubscriptions(APIView):
                     statuscode=status.HTTP_200_OK
                 )
             elif result.is_error():
-                print(result.errors)
+                #print(result.errors)
                 return display_response(
                     msg="FAIL",
                     err=str(result.errors),
@@ -1078,7 +1078,7 @@ class GetAllGroups(APIView):
         industry_id = request.query_params.get("industry_id", None)
         group_id = request.query_params.get("group_id", None)
 
-        print("43534",home_groups, industry_id, group_id)
+        #print("43534",home_groups, industry_id, group_id)
 
         if home_groups:
             """Get the created groups of the user from the SubscriptionModel"""
@@ -1203,7 +1203,7 @@ class GetAllGroups(APIView):
                 # get_groups ; get disabled plans from the group
                 disabled_plans = get_groups.disabled_plans
                 disabled_plans = list(disabled_plans)
-                print("disabled_plans",disabled_plans)
+                #print("disabled_plans",disabled_plans)
                 for plan in result.body['objects']:
                     for plan_serializer_data in plan_serializer.data:
                         if plan['id'] == plan_serializer_data['plan_id']:
@@ -1214,7 +1214,7 @@ class GetAllGroups(APIView):
                             else:
                                 plan['disabled'] = False
                  
-                print("result.body------------------",result.body['objects'])
+                #print("result.body------------------",result.body['objects'])
                 return display_response(
                     msg="SUCCESS",
                     err=None,
@@ -1226,7 +1226,7 @@ class GetAllGroups(APIView):
                     statuscode=status.HTTP_200_OK
                 )
             elif result.is_error():
-                print(result.errors)
+                #print(result.errors)
                 return display_response(
                     msg="FAIL",
                     err=str(result.errors),
@@ -1423,14 +1423,14 @@ class OpenGroupShareUrl(APIView):
     permission_classes = []
 
     def get(self, request, url):
-        print("------GET------")
-        print(url)
+        #print("------GET------")
+        #print(url)
         data = request.data
 
         """Endpoint to open the group url"""
         get_group = SubscriptionModel.objects.filter(
             Q(endpoint_path=url)).first()
-        print(get_group)
+        #print(get_group)
 
         if get_group is None:
             response = TemplateResponse(request, 'error.html', data)
@@ -1467,7 +1467,7 @@ class OpenGroupShareUrl(APIView):
             )
 
             if result.is_error():
-                print(result.errors)
+                #print(result.errors)
                 response = TemplateResponse(request, 'error.html', data)
             else:
                 """
@@ -1511,7 +1511,7 @@ class OpenGroupShareUrl(APIView):
                     bussiness_result = square_client_conn.locations.list_locations()
 
                     if bussiness_result.is_success():
-                        print(bussiness_result.body)
+                        #print(bussiness_result.body)
                         if len(bussiness_result.body) != 0:
                             for j in range(len(bussiness_result.body['locations'])):
                                 if bussiness_result.body['locations'][j]['merchant_id'] == get_group.merchant_id:
@@ -1521,7 +1521,8 @@ class OpenGroupShareUrl(APIView):
                                     bussiness_name = bussiness_result.body['locations'][j]['business_name']
                                     break
                 except Exception as e:
-                    print(e)
+                    #print(e)
+                    pass
 
                 """Must return the following data to the template"""
                 data = {
@@ -1534,7 +1535,6 @@ class OpenGroupShareUrl(APIView):
                     "plans": result.body['objects'], 
                 }
                 
-                print(data['plans'][0])
 
                 #TODO : add templates part
                 template_name = 'template_1.html'
@@ -1560,8 +1560,8 @@ class OpenGroupSharePaymentUrl(APIView):
         subscription_model_id = data.get('subscription_model_id', None)
         plan_name = data.get('plan_name', None)
 
-        print("------GET------" ,data) 
-        print("------plan------" ,plan_amt , subscription_model_id , plan_id)
+        #print("------GET------" ,data) 
+        #print("------plan------" ,plan_amt , subscription_model_id , plan_id)
       
         get_group = SubscriptionModel.objects.filter(
             Q(endpoint_path=url)).first()
@@ -1641,7 +1641,7 @@ class ProfileSettings(APIView):
         result = square_client_conn.locations.list_locations()
 
         if result.is_success():
-            print(result.body)
+            #print(result.body)
             """Get the particular object from the list which has the same merchant_id"""
             profile_data  = {}
             for location in result.body['locations']:
@@ -1660,7 +1660,7 @@ class ProfileSettings(APIView):
             )
 
         elif result.is_error():
-            print(result.errors)
+            #print(result.errors)
             return display_response(
                 msg="FAIL",
                 err=str(result.errors),
@@ -1751,10 +1751,10 @@ class AllInvoice(APIView):
             location_res = square_client_conn.locations.list_locations()
 
             if location_res.is_success():
-                print(location_res.body)
+                #print(location_res.body)
                 location_id = location_res.body['locations'][0]['id']
             elif location_res.is_error():
-                print(location_res.errors)
+                #print(location_res.errors)
                 return display_response(
                     msg="FAIL",
                     err=str(location_res.errors),
@@ -1792,7 +1792,7 @@ class AllInvoice(APIView):
                 )
 
                 if invoice_res.is_success():
-                    print(invoice_res.body)
+                    #print(invoice_res.body)
 
                     invoice_list = []
                     if len(invoice_res.body) > 0:
@@ -1823,7 +1823,7 @@ class AllInvoice(APIView):
             )
 
             if invoice_res.is_success():
-                print(invoice_res.body)
+                #print(invoice_res.body)
 
                 invoice_list = []
                 if len(invoice_res.body) > 0:
@@ -1854,9 +1854,9 @@ class TestResponse(APIView):
     permission_classes = []
 
     def get(self, request, *args, **kwargs):
-        print("------GET------")
-        print(request)
-        print(request.data)
+        #print("------GET------")
+        #print(request)
+        #print(request.data)
         return display_response(
             msg="SUCCESS",
             err=None,
@@ -1865,9 +1865,9 @@ class TestResponse(APIView):
         )
 
     def post(self, request, *args, **kwargs):
-        print("------POST------")
-        print(request)
-        print(request.data)
+        #print("------POST------")
+        #print(request)
+        #print(request.data)
         return display_response(
             msg="SUCCESS",
             err=None,
@@ -1922,7 +1922,7 @@ class TestResponse(APIView):
 #             )
 
 #             if get_customer.is_error():
-#                 print(get_customer.errors)
+#                 #print(get_customer.errors)
 #                 return display_response(
 #                     msg="FAIL",
 #                     err=str(get_customer.errors),
@@ -1932,7 +1932,7 @@ class TestResponse(APIView):
 #                     statuscode=status.HTTP_406_NOT_ACCEPTABLE
 #                 )
 #             elif get_customer.is_success():
-#                 print(get_customer.body)
+#                 #print(get_customer.body)
 #                 """if customer length greater than 0 then customer exists"""
 #                 if len(get_customer.body['customers']) > 0:
 #                     customer_id = get_customer.body['customers'][0]['id']
@@ -1946,10 +1946,10 @@ class TestResponse(APIView):
 #                     )
 
 #                     if create_customer.is_success():
-#                         print(create_customer.body)
+#                         #print(create_customer.body)
 #                         customer_id = create_customer.body['customer']['id']
 #                     elif create_customer.is_error():
-#                         print(create_customer.errors)
+#                         #print(create_customer.errors)
 #                         return display_response(
 #                             msg="FAIL",
 #                             err=str(create_customer.errors),
@@ -1959,7 +1959,7 @@ class TestResponse(APIView):
 #                             statuscode=status.HTTP_406_NOT_ACCEPTABLE
 #                         )
 #         except Exception as e:
-#             print(e)
+#             #print(e)
 #             return display_response(
 #                 msg="FAIL",
 #                 err=str(e),
@@ -1974,10 +1974,10 @@ class TestResponse(APIView):
 #             location_res = square_client_conn.locations.list_locations()
 
 #             if location_res.is_success():
-#                 print(location_res.body)
+#                 #print(location_res.body)
 #                 location_id = location_res.body['locations'][0]['id']
 #             elif location_res.is_error():
-#                 print(location_res.errors)
+#                 #print(location_res.errors)
 #                 return display_response(
 #                     msg="FAIL",
 #                     err=str(location_res.errors),
@@ -2014,7 +2014,7 @@ class TestResponse(APIView):
 #             )
 
 #             if result.is_success():
-#                 print(result.body)
+#                 #print(result.body)
 #                 return display_response(
 #                     msg="SUCCESS",
 #                     err=None,
@@ -2022,7 +2022,7 @@ class TestResponse(APIView):
 #                     statuscode=status.HTTP_200_OK
 #                 )
 #             elif result.is_error():
-#                 print(result.errors)
+#                 #print(result.errors)
 #                 return display_response(
 #                     msg="FAIL",
 #                     err=str(result.errors),
