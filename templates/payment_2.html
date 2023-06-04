@@ -197,7 +197,7 @@
               <div class="card-body"> 
                 <div class="container" >
                     <p class="pricing-plan-cost-cadence" style="font-weight: 800;">Payment Amount</p>
-                    <h3 class="pricing-plan-cost mb-3" style="font-size: 21px;">${{plan_amt}} ({{plan_name}} Plan-{{group_name}})</h3>
+                    <h3 class="pricing-plan-cost mb-3" style="font-size: 21px;">${{plan_amt:divide_string_by_100}} ({{plan_name}} Plan-{{group_name}})</h3>
                     <p class="pricing-plan-cost-cadence" style="font-weight: 800;">Name on card</p>
                     <input id="nameInput" type="text" class="form-control mb-3" placeholder="Rohith ND" required>
                     <div class="row">
@@ -227,7 +227,7 @@
                         </div>    
                     </div>
                     <br />
-                    <button onclick="makePayment()" class="btn pricing-plan-purchase-btn w-100">Purchase</button> 
+                    <button onclick="makePayment()" class="btn pricing-plan-purchase-btn w-100">Pay {{plan_amt|divide_string_by_100}}</button> 
                   </div>
       
               </div>
