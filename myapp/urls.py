@@ -17,6 +17,7 @@ urlpatterns=[
     path('edit-plan/',EditPlan.as_view(),name="edit-plan"), #update the plan details
     path('profile/',ProfileSettings.as_view(),name="profile"), #update the profile details
     path('dashboard/',DashboardAnalytics.as_view(),name="dashboard"), #get the dashboard details
+    path('all-invoices/',AllInvoice.as_view(),name="all-invoices"), #get the list of all invoices
 
     #----Not used----
     # path('login/',LoginUser.as_view(),name="login-user"),
