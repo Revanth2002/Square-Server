@@ -122,6 +122,7 @@ SQUARE_APP_SECRET = "sandbox-sq0csb-G-sWvaZce8bFSDtWG-7_QwB2ui0O4HN5TV9Zt09A6XI"
 SQUARE_API_URL = "https://connect.squareupsandbox.com"
 SQUARE_SANDBOX_TOKEN = "EAAAEA0tYbJTJzDRPAxWp8VQK2eVbNSh1Rhw_gb5Ff0um4naj1IfFATkN0-e8NMQ"
 SQUARE_ENVIRONMENT = "sandbox"
+SQUARE_LOCATION_ID = ""
 
 if DEBUG==True :
     STATIC_URL = '/static/'

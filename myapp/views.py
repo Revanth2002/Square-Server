@@ -556,13 +556,13 @@ class MakePayment(APIView):
         email = data.get('email', None)
         name = data.get('name', None)
         phone_number = data.get('phone_number', None)
-        plan_id = data.get('plan_id', None)
-        card = data.get('card', None)
+        plan_id = data.get('plan_id', None) 
         plan_amt = int(data.get('plan_amt', None))
         subscription_model_id = data.get('subscription_model_id', None)
         source_id = data.get('source_id', None) #Token 
         card_number = data.get('card_number', None) #Token
-        expiry_date = data.get('expiry_date', None) #Token
+        exp_month = data.get('exp_month', None) #Token
+        exp_year = data.get('exp_year', None) #Token
 
         if email in [None, ""] or card_number in [None, ""] or name in [None, ""] or phone_number in [None, ""] or plan_id in [None, ""] or plan_amt in [None, ""] or subscription_model_id in [None, ""] or source_id in [None, ""]:
             return display_response(
@@ -573,12 +573,9 @@ class MakePayment(APIView):
             )
 
         """strip the card_number for last 4 digits"""
-        stripped_card_number = card_number[13:17]
-
-        """strip the MM/YY to MM and YY"""
-        expiry_date = expiry_date.split('/')
-
-
+        stripped_card_number = card_number
+        # stripped_card_number = card_number[13:17]
+  
         """Check if subscription model exists"""
         subscription_model = SubscriptionModel.objects.filter(
             id=subscription_model_id).first()
@@ -589,7 +586,7 @@ class MakePayment(APIView):
                 body=None,
                 statuscode=status.HTTP_406_NOT_ACCEPTABLE
             )
-
+        print("589")
         db_access_token = get_square_access_token_from_db(
             request, subscription_model_id)
         if db_access_token is False:
@@ -605,6 +602,7 @@ class MakePayment(APIView):
             access_token=db_access_token,  # user.access_token, #settings.SQUARE_SANDBOX_TOKEN,
             environment=settings.SQUARE_ENVIRONMENT
         )
+        print("605")
 
         """Step-1 : Create or getcustomer client first"""
         try:
@@ -667,10 +665,14 @@ class MakePayment(APIView):
                     print(card_result.body)
                     """If card_result is not null and matches with exact """
                     
-                    for i in card_result['cards'] :
+                    print("668")
+                    print("670" , card_result.body['cards'])
+                    for i in card_result.body['cards'] :
+                        print("670" , i)
                         if stripped_card_number == i['last_4']:
                             customer_card_id = i['id']
                             break 
+                    print("672")
                     
                     if customer_card_id is None:
                         """Create the card and return that id"""
@@ -680,19 +682,21 @@ class MakePayment(APIView):
                                 "idempotency_key": idem_key_card,
                                 "source_id": "cnon:card-nonce-ok",
                                 "card": {
-                                    "exp_month": expiry_date[0],
-                                    "exp_year": expiry_date[1],
+                                    "exp_month": exp_month,
+                                    "exp_year": exp_year,
                                     "cardholder_name": name,
                                     "customer_id": customer_id
                                 }
                             }
                         )
+                        print("690")
 
                         if create_card_result.is_success():
                             print(create_card_result.body)
                             customer_card_id = create_card_result.body['card']['id']
                         elif create_card_result.is_error():
                             print(create_card_result.errors)
+                            print("697")
                             return display_response(
                                 msg="FAIL",
                                 err=str(create_card_result.errors),
@@ -725,6 +729,7 @@ class MakePayment(APIView):
                 statuscode=status.HTTP_406_NOT_ACCEPTABLE
             )
 
+        print("726")
         """Step-2 : Get location id"""
         try:
             location_res = square_client_conn.locations.list_locations()
@@ -751,6 +756,7 @@ class MakePayment(APIView):
                 },
                 statuscode=status.HTTP_406_NOT_ACCEPTABLE
             )
+        print("759")
 
         """Step-3 : Create a payment"""
         try:
@@ -769,7 +775,7 @@ class MakePayment(APIView):
             )
 
             if payment_result.is_success():
-                print(payment_result.body)
+                print("778",payment_result.body)
                 """Make subscription now"""
                 current_date = date.today()
                 formatted_date = current_date.strftime(Ymd)
@@ -777,6 +783,7 @@ class MakePayment(APIView):
                 """Step-4 : Create subscription"""
                 try:
                     idem_key1 = generate_idempotency_key()
+                    print("786" , customer_card_id)
                     result = square_client_conn.subscriptions.create_subscription(
                         body={
                             "idempotency_key": idem_key1,
@@ -789,8 +796,9 @@ class MakePayment(APIView):
                         }
                     )
 
+
                     if result.is_success():
-                        print(result.body)
+                        print("799",result.body)
                         """Add the subscription id in the model"""
                         subscription_id = result.body['subscription']['id']
                         subscription_model.subscribed_people.append(subscription_id)
@@ -1526,6 +1534,8 @@ class OpenGroupSharePaymentUrl(APIView):
                 "plan_name" : plan_name,
                 "plan_id" : plan_id,          
                 "endpoint_path": get_group.endpoint_path,      
+                "square_application_id": settings.SQUARE_APP_ID,
+                "square_location_id": settings.SQUARE_LOCATION_ID,
             }
 
             template_name = 'payment_1.html'
