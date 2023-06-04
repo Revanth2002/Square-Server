@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-deqij=34u*i8jrtco4p(c5n(%*alud_eevc5ks9d^0=xbisgl_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*','localhost' , 'localhost:5173']
+ALLOWED_HOSTS = ['*','localhost' , 'localhost:5173' , 'web-magicsubscribe.bunnyenv.com' , 'https://web-magicsubscribe.bunnyenv.com']
 CORS_ORIGIN_ALLOW_ALL = True 
 
 # Application definition
