@@ -1500,9 +1500,34 @@ class OpenGroupShareUrl(APIView):
                             plan['plan_notes'] = plan_serializer_data['notes']
                             plan['plan_points'] = plan_serializer_data['points']
 
+                try:
+                    """Get user object from the User model"""
+                    get_user = User.objects.filter(merchant_id = get_group.merchant_id).first()
+                    bussiness_name = f"{get_user.company_name}"
+                    bussiness_logo = None
+                    # result = square_client_conn.merchants.retrieve_merchant(
+                    #     merchant_id = get_group.merchant_id
+                    # )
+                    bussiness_result = square_client_conn.locations.list_locations()
+
+                    if bussiness_result.is_success():
+                        print(bussiness_result.body)
+                        if len(bussiness_result.body) != 0:
+                            for j in range(len(bussiness_result.body['locations'])):
+                                if bussiness_result.body['locations'][j]['merchant_id'] == get_group.merchant_id:
+                                    """Check if the logo_url key is present in the dict"""
+                                    if 'logo_url' in bussiness_result.body['locations'][j]:
+                                        bussiness_logo = bussiness_result.body['locations'][j]['logo_url']
+                                    bussiness_name = bussiness_result.body['locations'][j]['business_name']
+                                    break
+                except Exception as e:
+                    print(e)
+
                 """Must return the following data to the template"""
                 data = {
                     "subscription_model_id": get_group.id,
+                    "bussiness_name" : bussiness_name,
+                    "bussiness_logo" : bussiness_logo,
                     "group_name": get_group.group,
                     "industry_name": get_group.industry,
                     "endpoint_path": get_group.endpoint_path,
