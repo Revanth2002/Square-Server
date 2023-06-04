@@ -195,7 +195,7 @@ class OAuthAuthorize(APIView):
 
     def get(self, request):
         try:
-            SCOPES_LIST = "CUSTOMERS_WRITE CUSTOMERS_READ MERCHANT_PROFILE_READ SUBSCRIPTIONS_WRITE SUBSCRIPTIONS_READ ORDERS_WRITE ITEMS_WRITE INVOICES_WRITE ITEMS_READ BANK_ACCOUNTS_READ CASH_DRAWER_READ PAYMENTS_READ PAYMENTS_WRITE SETTLEMENTS_READ"
+            SCOPES_LIST = "CUSTOMERS_WRITE CUSTOMERS_READ MERCHANT_PROFILE_READ SUBSCRIPTIONS_WRITE SUBSCRIPTIONS_READ ORDERS_WRITE ITEMS_WRITE INVOICES_WRITE INVOICES_READ ITEMS_READ BANK_ACCOUNTS_READ CASH_DRAWER_READ PAYMENTS_READ PAYMENTS_WRITE SETTLEMENTS_READ"
             req_url = f"{settings.SQUARE_API_URL}/oauth2/authorize?client_id={settings.SQUARE_APP_ID}&scope={SCOPES_LIST}&session=False&state=82201dd8d83d23cc8a48caf52b"
             print(req_url)
             return display_response(
@@ -592,7 +592,7 @@ class MakePayment(APIView):
                 body=None,
                 statuscode=status.HTTP_406_NOT_ACCEPTABLE
             )
-        print("589")
+
         db_access_token = get_square_access_token_from_db(
             request, subscription_model_id)
         if db_access_token is False:
@@ -1500,9 +1500,34 @@ class OpenGroupShareUrl(APIView):
                             plan['plan_notes'] = plan_serializer_data['notes']
                             plan['plan_points'] = plan_serializer_data['points']
 
+                try:
+                    """Get user object from the User model"""
+                    get_user = User.objects.filter(merchant_id = get_group.merchant_id).first()
+                    bussiness_name = f"{get_user.company_name}"
+                    bussiness_logo = None
+                    # result = square_client_conn.merchants.retrieve_merchant(
+                    #     merchant_id = get_group.merchant_id
+                    # )
+                    bussiness_result = square_client_conn.locations.list_locations()
+
+                    if bussiness_result.is_success():
+                        print(bussiness_result.body)
+                        if len(bussiness_result.body) != 0:
+                            for j in range(len(bussiness_result.body['locations'])):
+                                if bussiness_result.body['locations'][j]['merchant_id'] == get_group.merchant_id:
+                                    """Check if the logo_url key is present in the dict"""
+                                    if 'logo_url' in bussiness_result.body['locations'][j]:
+                                        bussiness_logo = bussiness_result.body['locations'][j]['logo_url']
+                                    bussiness_name = bussiness_result.body['locations'][j]['business_name']
+                                    break
+                except Exception as e:
+                    print(e)
+
                 """Must return the following data to the template"""
                 data = {
                     "subscription_model_id": get_group.id,
+                    "bussiness_name" : bussiness_name,
+                    "bussiness_logo" : bussiness_logo,
                     "group_name": get_group.group,
                     "industry_name": get_group.industry,
                     "endpoint_path": get_group.endpoint_path,
@@ -1704,6 +1729,124 @@ class DashboardAnalytics(APIView):
             },
             statuscode=status.HTTP_200_OK
         )
+
+#----Invoice API----------
+class AllInvoice(APIView):
+    authentication_classes = [UserAuthentication]
+    permission_classes = []
+
+    def get(self, request, *args):
+        user = request.user
+        customer_id = request.data.get('customer_id', None)
+
+        """Square Client Connection"""
+        square_client_conn = Client(
+            access_token=user.access_token,
+            environment=settings.SQUARE_ENVIRONMENT
+        )
+
+
+        """Step-1 : Get location id"""
+        try:
+            location_res = square_client_conn.locations.list_locations()
+
+            if location_res.is_success():
+                print(location_res.body)
+                location_id = location_res.body['locations'][0]['id']
+            elif location_res.is_error():
+                print(location_res.errors)
+                return display_response(
+                    msg="FAIL",
+                    err=str(location_res.errors),
+                    body={
+                        "log": "Failed at SQUARE api location list"
+                    },
+                    statuscode=status.HTTP_406_NOT_ACCEPTABLE
+                )
+        except Exception as e:
+            return display_response(
+                msg="FAIL",
+                err=str(e),
+                body={
+                    "log": "Failed at location list try-catch block"
+                },
+                statuscode=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        """Step-2 : List invoices"""
+        if customer_id not in [None, ""]:
+            try:
+                invoice_res = square_client_conn.invoices.search_invoices(
+                body = {
+                    "query": {
+                    "filter": {
+                        "location_ids": [
+                            location_id
+                        ],
+                        "customer_ids": [
+                            customer_id
+                        ]
+                    }
+                    }
+                }
+                )
+
+                if invoice_res.is_success():
+                    print(invoice_res.body)
+
+                    invoice_list = []
+                    if len(invoice_res.body) > 0:
+                        invoice_list = invoice_res.body['invoices']
+
+                    return display_response(
+                        msg="SUCCESS",
+                        err=None,
+                        body={
+                            "log": "Successfully fetched invoices",
+                            "invoices": invoice_list
+                        },
+                        statuscode=status.HTTP_200_OK
+                    )   
+            except Exception as e:
+                return display_response(
+                    msg="FAIL",
+                    err=str(e),
+                    body={
+                        "log": "Failed at invoice search try-catch block"
+                    },
+                    statuscode=status.HTTP_406_NOT_ACCEPTABLE
+                )
+
+        try:
+            invoice_res = square_client_conn.invoices.list_invoices(
+                location_id=location_id
+            )
+
+            if invoice_res.is_success():
+                print(invoice_res.body)
+
+                invoice_list = []
+                if len(invoice_res.body) > 0:
+                    invoice_list = invoice_res.body['invoices']
+
+                return display_response(
+                    msg="SUCCESS",
+                    err=None,
+                    body={
+                        "log": "Successfully fetched invoices",
+                        "invoices": invoice_list
+                    },
+                    statuscode=status.HTTP_200_OK
+                )   
+        except Exception as e:
+            return display_response(
+                msg="FAIL",
+                err=str(e),
+                body={
+                    "log": "Failed at invoice list try-catch block"
+                },
+                statuscode=status.HTTP_406_NOT_ACCEPTABLE
+            )
 
 
 class TestResponse(APIView):
