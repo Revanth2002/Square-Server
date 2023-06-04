@@ -195,7 +195,7 @@ class OAuthAuthorize(APIView):
 
     def get(self, request):
         try:
-            SCOPES_LIST = "CUSTOMERS_WRITE CUSTOMERS_READ MERCHANT_PROFILE_READ SUBSCRIPTIONS_WRITE ORDERS_WRITE ITEMS_WRITE INVOICES_WRITE ITEMS_READ BANK_ACCOUNTS_READ CASH_DRAWER_READ PAYMENTS_READ PAYMENTS_WRITE SETTLEMENTS_READ"
+            SCOPES_LIST = "CUSTOMERS_WRITE CUSTOMERS_READ MERCHANT_PROFILE_READ SUBSCRIPTIONS_WRITE SUBSCRIPTIONS_READ ORDERS_WRITE ITEMS_WRITE INVOICES_WRITE ITEMS_READ BANK_ACCOUNTS_READ CASH_DRAWER_READ PAYMENTS_READ PAYMENTS_WRITE SETTLEMENTS_READ"
             req_url = f"{settings.SQUARE_API_URL}/oauth2/authorize?client_id={settings.SQUARE_APP_ID}&scope={SCOPES_LIST}&session=False&state=82201dd8d83d23cc8a48caf52b"
             print(req_url)
             return display_response(
@@ -553,24 +553,30 @@ class MakePayment(APIView):
                 -phone number(US number optional,ISD not supported)
         """
         data = request.data
-        email = data.get('email', None)
+        print("data", data)
+
         name = data.get('name', None)
+        email = data.get('email', None)
         phone_number = data.get('phone_number', None)
         plan_id = data.get('plan_id', None) 
-        plan_amt = int(data.get('plan_amt', None))
         subscription_model_id = data.get('subscription_model_id', None)
+        plan_amt = int(data.get('plan_amt', None))
         source_id = data.get('source_id', None) #Token 
         card_number = data.get('card_number', None) #Token
         exp_month = data.get('exp_month', None) #Token
         exp_year = data.get('exp_year', None) #Token
 
-        if email in [None, ""] or card_number in [None, ""] or name in [None, ""] or phone_number in [None, ""] or plan_id in [None, ""] or plan_amt in [None, ""] or subscription_model_id in [None, ""] or source_id in [None, ""]:
+        valid_arr = [None,""]
+
+        if name in valid_arr or email in valid_arr or phone_number in valid_arr or plan_id in valid_arr or subscription_model_id in valid_arr or plan_amt in valid_arr or source_id in valid_arr or card_number in valid_arr or exp_month in valid_arr or exp_year in valid_arr:
             return display_response(
                 msg="FAIL",
                 err="email, name, phone_number, plan_id, plan_amt, source_id are required",
                 body=None,
                 statuscode=status.HTTP_406_NOT_ACCEPTABLE
             )
+
+        print("----------passed first check------------------")
 
         """strip the card_number for last 4 digits"""
         stripped_card_number = card_number
@@ -598,6 +604,9 @@ class MakePayment(APIView):
             )
 
         """Square Client Connection"""
+        print("-----square client connection-----")
+        print(db_access_token)
+
         square_client_conn = Client(
             access_token=db_access_token,  # user.access_token, #settings.SQUARE_SANDBOX_TOKEN,
             environment=settings.SQUARE_ENVIRONMENT
@@ -617,7 +626,8 @@ class MakePayment(APIView):
                     }
                 }
             )
-
+            print("------get customers-------")
+            print(get_customer)
             if get_customer.is_error():
                 print(get_customer.errors)
                 return display_response(
@@ -629,11 +639,15 @@ class MakePayment(APIView):
                     statuscode=status.HTTP_406_NOT_ACCEPTABLE
                 )
             elif get_customer.is_success():
+                print("------inside get_customers.is_success()-------")
                 print(get_customer.body)
+                print(len(get_customer.body))
                 """if customer length greater than 0 then customer exists"""
-                if len(get_customer.body['customers']) > 0:
+                if len(get_customer.body) != 0:
+                    print("---------if create customer--------")
                     customer_id = get_customer.body['customers'][0]['id']
                 else:
+                    print("---------else create customer--------")
                     create_customer = square_client_conn.customers.create_customer(
                         body={
                             "given_name": name,
@@ -641,7 +655,7 @@ class MakePayment(APIView):
                             "phone_number": phone_number  # "212-456-7890"
                         }
                     )
-
+                    print(create_customer)
                     if create_customer.is_success():
                         print(create_customer.body)
                         customer_id = create_customer.body['customer']['id']
@@ -656,6 +670,8 @@ class MakePayment(APIView):
                             statuscode=status.HTTP_406_NOT_ACCEPTABLE
                         )
                 
+                print(f"customer_id : {customer_id}")
+
                 """Check if the card already exists or else add the card"""   
                 card_result = square_client_conn.cards.list_cards(
                     customer_id = customer_id
@@ -665,14 +681,14 @@ class MakePayment(APIView):
                     print(card_result.body)
                     """If card_result is not null and matches with exact """
                     
-                    print("668")
-                    print("670" , card_result.body['cards'])
-                    for i in card_result.body['cards'] :
-                        print("670" , i)
-                        if stripped_card_number == i['last_4']:
-                            customer_card_id = i['id']
-                            break 
-                    print("672")
+                    if len(card_result.body) == 0:
+                        customer_card_id = None
+                    else:
+                        for i in card_result.body['cards'] :
+                            print("670" , i)
+                            if stripped_card_number == i['last_4']:
+                                customer_card_id = i['id']
+                                break
                     
                     if customer_card_id is None:
                         """Create the card and return that id"""
@@ -682,8 +698,8 @@ class MakePayment(APIView):
                                 "idempotency_key": idem_key_card,
                                 "source_id": "cnon:card-nonce-ok",
                                 "card": {
-                                    "exp_month": exp_month,
-                                    "exp_year": exp_year,
+                                    "exp_month": int(exp_month),
+                                    "exp_year": int(exp_year),
                                     "cardholder_name": name,
                                     "customer_id": customer_id
                                 }
@@ -719,6 +735,7 @@ class MakePayment(APIView):
                     )
 
         except Exception as e:
+            print("----failed at customer customers search_customers----")
             print(e)
             return display_response(
                 msg="FAIL",
