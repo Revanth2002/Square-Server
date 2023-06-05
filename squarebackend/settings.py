@@ -124,10 +124,10 @@ USE_TZ = True
 # BASE_URL = "http://localhost:8000"
 BASE_URL = "https://web-magicsubscribe.bunnyenv.com/"
 
-SQUARE_APP_ID= "sandbox-sq0idb-SRWkAMesYP5gSBlpAii1Kw" #"sq0idp-hGDpf0a5Lo1bQF9J6b6Y8Q"
-SQUARE_APP_SECRET = "sandbox-sq0csb-G-sWvaZce8bFSDtWG-7_QwB2ui0O4HN5TV9Zt09A6XI"  #"sq0csp-nWT6LVycldPVJCwTFDiCM_4YM_64WevhIjxSeCYAISE"
+SQUARE_APP_ID= "sandbox-sq0idb-mR-Gmotvib1s9VYITJKyNg"  
+SQUARE_APP_SECRET = "sandbox-sq0csb-IZ1xlFMOcZFj4BLE2II1jNKUlTrnyz0PVD818JC-Hkc"  #"sq0csp-nWT6LVycldPVJCwTFDiCM_4YM_64WevhIjxSeCYAISE"
 SQUARE_API_URL = "https://connect.squareupsandbox.com"
-SQUARE_SANDBOX_TOKEN = "EAAAEA0tYbJTJzDRPAxWp8VQK2eVbNSh1Rhw_gb5Ff0um4naj1IfFATkN0-e8NMQ"
+SQUARE_SANDBOX_TOKEN = "EAAAEC9-d003YrI3DZZTEG0Yl0hS7c_Tbvo6AcyObRnqL_R2-7ZODSFk-6gSYn6o"
 SQUARE_ENVIRONMENT = "sandbox"
 SQUARE_LOCATION_ID = ""
 
