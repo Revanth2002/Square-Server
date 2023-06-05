@@ -30,7 +30,8 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORGIN_WHITELIST = [
     "https://web-magicsubscribe.bunnyenv.com",
     "web-magicsubscribe.bunnyenv.com",
-    "https://magicsubscribe.netlify.app/"
+    "https://magicsubscribe.netlify.app/",
+    "magicsubscribe.netlify.app"
 ]
 
 # Application definition
