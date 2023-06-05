@@ -5,10 +5,9 @@ Clone this repo and run the following commands
 git clone https://github.com/Revanth2002/Square-Server.git
 cd Square-Server
 ````
-Change the secrets in the settings.py file
+Change the secrets in the [settings.py](./squarebackend/settings.py) file
 ```python 
 BASE_URL =  "http://localhost:8000" # your server url
-
 SQUARE_APP_ID= "sandbox-****-***" # your square app id
 SQUARE_APP_SECRET = "***" # your square app secret
 SQUARE_API_URL = "https://connect.squareupsandbox.com"
