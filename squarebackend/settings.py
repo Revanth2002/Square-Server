@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-deqij=34u*i8jrtco4p(c5n(%*alud_eevc5ks9d^0=xbisgl_'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*','localhost' , 'localhost:5173' , 'https://magicsubscribe.netlify.app/' ,'magicsubscribe.netlify.app/', 'web-magicsubscribe.bunnyenv.com' , 'https://web-magicsubscribe.bunnyenv.com']
 CORS_ORIGIN_ALLOW_ALL = True 
@@ -122,12 +122,12 @@ USE_L10N = True
 USE_TZ = True
 
 # BASE_URL = "http://localhost:8000"
-BASE_URL = "https://web-magicsubscribe.bunnyenv.com/"
+BASE_URL = "https://magicsubscribe.pythonanywhere.com/"
 
 SQUARE_APP_ID= "sandbox-sq0idb-mR-Gmotvib1s9VYITJKyNg"  
-SQUARE_APP_SECRET = "sandbox-sq0csb-IZ1xlFMOcZFj4BLE2II1jNKUlTrnyz0PVD818JC-Hkc"  #"sq0csp-nWT6LVycldPVJCwTFDiCM_4YM_64WevhIjxSeCYAISE"
-SQUARE_API_URL = "https://connect.squareupsandbox.com"
+SQUARE_APP_SECRET = "sandbox-sq0csb-IZ1xlFMOcZFj4BLE2II1jNKUlTrnyz0PVD818JC-Hkc" 
 SQUARE_SANDBOX_TOKEN = "EAAAEC9-d003YrI3DZZTEG0Yl0hS7c_Tbvo6AcyObRnqL_R2-7ZODSFk-6gSYn6o"
+SQUARE_API_URL = "https://connect.squareupsandbox.com"
 SQUARE_ENVIRONMENT = "sandbox"
 SQUARE_LOCATION_ID = ""
 
