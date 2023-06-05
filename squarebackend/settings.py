@@ -121,8 +121,8 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-# BASE_URL = "http://localhost:8000"
-BASE_URL = "https://magicsubscribe.pythonanywhere.com/"
+BASE_URL = "http://localhost:8000"
+# BASE_URL = "https://magicsubscribe.pythonanywhere.com/"
 
 SQUARE_APP_ID= "sandbox-sq0idb-mR-Gmotvib1s9VYITJKyNg"  
 SQUARE_APP_SECRET = "sandbox-sq0csb-IZ1xlFMOcZFj4BLE2II1jNKUlTrnyz0PVD818JC-Hkc" 
